@@ -107,6 +107,7 @@ import { getMyWishlist, saveMyWishlist } from "../common/mywishlist";
 
 import Slider from "./Includes/Slider.vue";
 import Sidebar from "./Includes/Sidebar.vue";
+
 export default {
   name: "Home",
   data() {
