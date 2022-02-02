@@ -181,9 +181,35 @@
                   </tr>
                 </template>
                 <tr>
-                  <td colspan="3">
-                    <div v-if="cartCost.shippingCost == 0">
-                      <select v-model="coupon_value">
+                  <td colspan="4" class="text-center align-middle">
+                    <template v-if="cartCost.shippingCost == 0 && !coupon_value"
+                      ><div v-if="toggleCouponButton == false">
+                        <button
+                          class="btn btn-primary text-center"
+                          :class="{ invisible: toggleCouponButton }"
+                          @click="toggleCouponInput"
+                        >
+                          Have a coupon code?
+                        </button>
+                      </div>
+
+                      <div v-else>
+                        <input
+                          type="text"
+                          placeholder="Coupon Code"
+                          class="input-lg text-center"
+                          size="25"
+                          maxlength="24"
+                          ref="inputCouponCode"
+                          v-on:keypress="initVerify"
+                          v-on:change="initVerify"
+                          v-model="coupon_code"
+                          style="text-align: center; border: 3px solid black"
+                          :class="{ invisible: toggleCouponEntry }"
+                        />
+                      </div>
+
+                      <!-- <select v-model="coupon_value">
                         <option selected disabled value="">
                           -- Select a Coupon --
                         </option>
@@ -195,10 +221,10 @@
                           {{ coupon.coupon_name }} | ${{ coupon.coupon_value }}
                           Discount
                         </option>
-                      </select>
-                    </div>
+                      </select> -->
+                    </template>
                   </td>
-                  <td colspan="1">&nbsp;</td>
+                  <!-- <td colspan="1">&nbsp;</td> -->
                   <td colspan="2">
                     <table class="table table-condensed total-result">
                       <tr>
@@ -287,6 +313,10 @@ export default {
       userProfileData: {},
       coupon_value: undefined,
 
+      toggleCouponButton: false,
+      toggleCouponEntry: true,
+      coupon_code: undefined,
+
       // product: {
       //   price: 4.9,
       //   description: "backlink from",
@@ -349,6 +379,150 @@ export default {
         });
 
       // this.coupons = tempAllCoupons;
+    },
+
+    toggleCouponInput() {
+      // this.fetchAllCoupons();
+      // console.log(this.coupons);
+      // console.log(
+      //   "One: " + this.toggleCouponButton + " Two: " + this.toggleCouponEntry
+      // );
+      this.toggleCouponButton = true;
+      this.toggleCouponEntry = false;
+      // console.log(
+      //   "One: " + this.toggleCouponButton + " Two: " + this.toggleCouponEntry
+      // );
+    },
+
+    initVerify(e) {
+      console.log(e);
+      if (e.which !== 0) {
+        // alert("Charcter was typed. It was: " + String.fromCharCode(e.which));
+        console.log("Current: " + String.fromCharCode(e.which));
+
+        let coupon_code = this.$refs.inputCouponCode;
+        console.log("Incoming: " + coupon_code.value);
+        let new_code = "";
+
+        let temp_coupon_code = "";
+        for (let i = 0; i < coupon_code.value.length; i++) {
+          if (/[a-z]/.test(coupon_code.value.charAt(i))) {
+            temp_coupon_code += coupon_code.value.charAt(i).toUpperCase();
+            // console.log(coupon_code.value.charAt(i).toUpperCase());
+          } else {
+            temp_coupon_code += coupon_code.value.charAt(i);
+          }
+        }
+
+        coupon_code.value = temp_coupon_code;
+
+        // console.log(coupon_code.value.includes("-"));
+
+        if (coupon_code.value.length > 4 && !coupon_code.value.includes("-")) {
+          let original_code = coupon_code.value;
+
+          for (let i = 0; i < coupon_code.value.length; i++) {
+            if (/[a-z]/.test(coupon_code.value.charAt(i))) {
+              new_code += coupon_code.value.charAt(i).toUpperCase();
+              // console.log(coupon_code.value.charAt(i).toUpperCase());
+            } else {
+              new_code += coupon_code.value.charAt(i);
+            }
+            // console.log(i);
+            if ((i + 1) % 4 == 0 && i < 19) {
+              new_code += "-";
+            }
+          }
+          // console.log(new_code);
+          // console.log(original_code);
+          coupon_code.value = new_code;
+          new_code = original_code;
+        }
+
+        let trimmed_coupon_code = coupon_code.value.split("-");
+
+        // console.log(trimmed_coupon_code);
+
+        for (let i = 0; i < trimmed_coupon_code.length; i++) {
+          new_code = new_code.concat(trimmed_coupon_code[i]);
+        }
+
+        // console.log(new_code);
+
+        if (
+          new_code.length % 4 == 0 &&
+          coupon_code.value.length > 0 &&
+          coupon_code.value.length < 24
+        ) {
+          // coupon_code.style.borderColor = "red";
+          // coupon_code.style.color = "red";
+          coupon_code.value += "-";
+          // console.log(coupon_code.value);
+        } else {
+          // coupon_code.style.borderColor = "green";
+          // coupon_code.style.color = "green";
+        }
+
+        // coupon_code.value = new_code;
+
+        if (new_code.length == 20) {
+          let flag1 = 0;
+          let coupon_id = -1;
+          this.coupons.forEach((coupon) => {
+            if (coupon.coupon_code == new_code) {
+              flag1 = 1;
+              // console.log("Code: " + coupon.id);
+              coupon_id = coupon.id;
+            }
+          });
+
+          if (flag1 == 1) {
+            coupon_code.style.border = "3px solid green";
+            coupon_code.style.color = "green";
+            this.verifyCoupon(coupon_id);
+          } else {
+            coupon_code.style.border = "3px solid red";
+            coupon_code.style.color = "red";
+            this.verifyCoupon(-1);
+          }
+        } else {
+          coupon_code.style.border = "3px solid black";
+          coupon_code.style.color = "black";
+        }
+
+        console.log("Outgoing: " + coupon_code.value);
+      }
+    },
+
+    verifyCoupon(coupon_id) {
+      // let flag1 = 0;
+      // console.log("Code: " + coupon_id);
+      let coupon_details = {};
+      this.coupons.forEach((coupon) => {
+        if (coupon.id == coupon_id) {
+          // flag1 = 1;
+          // console.log("Found Code: " + coupon.id);
+          coupon_details = coupon;
+        }
+      });
+
+      if (coupon_id != -1) {
+        this.$swal(
+          "Coupon Applied!",
+          `${coupon_details.coupon_name} worth $${coupon_details.coupon_value} has been successfully applied.`,
+          "success"
+        );
+
+        this.coupon_value = coupon_details.coupon_value;
+        this.toggleCouponEntry = true;
+        // console.log("Success: " + this.toggleCouponEntry);
+      } else {
+        this.$swal(
+          "Invalid Coupon!",
+          `Please re-check and enter correct Coupon Code.`,
+          "error"
+        );
+      }
     },
 
     fetchUserProfile() {
