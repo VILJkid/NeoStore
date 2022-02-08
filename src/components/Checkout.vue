@@ -311,7 +311,7 @@ export default {
       // productAssocs: [],
       coupons: {},
       userProfileData: {},
-      coupon_value: undefined,
+      coupon_value: 0,
 
       toggleCouponButton: false,
       toggleCouponEntry: true,
@@ -593,6 +593,7 @@ export default {
 
     postCheckout() {
       // alert("Hi");
+      console.log(this.coupon_value);
       this.detailsCheckout.errorsCheckout = [];
       this.detailsCheckout.successCheckout = "";
       if (!this.detailsCheckout.order_address) {
