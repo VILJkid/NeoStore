@@ -119,13 +119,13 @@
                 <template v-for="cd in combineData">
                   <tr :key="cd.product_id">
                     <td class="cart_product">
-                      <a href=""
+                      <router-link :to="'/product_details/' + cd.product_id"
                         ><img
                           v-bind:src="image_url + cd.product_image"
                           alt="Image not found"
                           width="110"
                           height="110"
-                      /></a>
+                      /></router-link>
                     </td>
                     <td class="cart_description">
                       <h4>
@@ -278,7 +278,10 @@
           <span>
             <label><input type="checkbox" /> Paypal</label>
           </span> -->
-          <div class="text-right">
+          <input type="radio" id="cod" v-model="payment" value="okay" />
+          <label for="cod">Cash on Delivery</label>
+
+          <div class="text-right" v-if="payment">
             <button @click="postCheckout" class="btn btn-primary">
               Continue &amp; Pay
             </button>
@@ -316,6 +319,8 @@ export default {
       toggleCouponButton: false,
       toggleCouponEntry: true,
       coupon_code: undefined,
+
+      payment: null,
 
       // product: {
       //   price: 4.9,

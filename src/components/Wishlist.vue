@@ -17,13 +17,13 @@
                 <template v-for="cd in combineData">
                   <tr :key="cd.id">
                     <td class="cart_product">
-                      <a href=""
+                      <router-link :to="'/product_details/' + cd.id"
                         ><img
                           v-bind:src="image_url + cd.product_banner_image"
                           alt="Image not found"
                           width="110"
                           height="110"
-                      /></a>
+                      /></router-link>
                     </td>
                     <td class="cart_description">
                       <h4>
